@@ -74,6 +74,47 @@
 			scrollbar-width: none;
 		}
 	</style>
+	
+	<style>
+		/* Responsive Logo Styling */
+		.custom-logo-link {
+			display: inline-block;
+			max-height: 60px;
+		}
+		.custom-logo {
+			max-height: 60px;
+			width: auto;
+			height: auto;
+			display: block;
+		}
+		@media (max-width: 768px) {
+			.custom-logo-link {
+				max-height: 45px;
+			}
+			.custom-logo {
+				max-height: 45px;
+			}
+		}
+	</style>
+	
+	<!-- Dark Mode Script - Must run before page renders -->
+	<script>
+		(function() {
+			// Check localStorage first, then system preference
+			const savedTheme = localStorage.getItem('theme');
+			const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+			
+			// Apply dark mode if:
+			// 1. User explicitly chose dark mode, OR
+			// 2. No saved preference AND system prefers dark
+			if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+				document.documentElement.classList.add('dark');
+			} else if (savedTheme === 'light') {
+				document.documentElement.classList.remove('dark');
+			}
+		})();
+	</script>
+	
 	<?php wp_head(); ?>
 </head>
 <body <?php body_class( 'bg-background-light dark:bg-background-dark text-text-main-light dark:text-text-main-dark font-sans antialiased transition-colors duration-300 flex flex-col min-h-screen' ); ?>>
@@ -136,8 +177,10 @@
 				}
 				?>
 			</div>
+			<!-- Right Actions -->
 			<div class="flex items-center space-x-4">
-				<button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" onclick="document.documentElement.classList.toggle('dark')">
+				<!-- Dark Mode Toggle -->
+				<button id="dark-mode-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
 					<span class="material-icons-outlined text-xl">dark_mode</span>
 				</button>
 				
@@ -153,6 +196,7 @@
 					</a>
 				</div>
 
+				<!-- Auth Section - Desktop -->
 				<?php if ( is_user_logged_in() ) : 
 					$current_user = wp_get_current_user();
 					?>
@@ -166,8 +210,6 @@
 								if ( $avatar ) {
 									echo $avatar;
 								} else {
-									// Fallback to initials if no avatar
-									$initials = strtoupper( substr( $current_user->display_name, 0, 1 ) );
 									echo '<span class="material-icons-outlined text-sm">person</span>';
 								}
 								?>
@@ -196,7 +238,7 @@
 						</div>
 					</div>
 				<?php else : ?>
-					<!-- Logged Out: Login/Signup -->
+					<!-- Logged Out: Login/Signup - Desktop -->
 					<div class="hidden md:flex items-center space-x-3">
 						<?php $auth_url = desilan_get_auth_page_url(); ?>
 						<a href="<?php echo esc_url( $auth_url ); ?>" class="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-primary transition-all px-4 py-2 rounded-full border-2 border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800">
@@ -209,7 +251,142 @@
 						<?php do_action( 'desilan_social_login' ); ?>
 					</div>
 				<?php endif; ?>
+
+				<!-- Mobile Menu Toggle -->
+				<button id="mobile-menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+					<span class="material-icons-outlined text-2xl">menu</span>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Mobile Menu -->
+	<div id="mobile-menu" class="hidden md:hidden border-t border-gray-100 dark:border-gray-800 bg-background-light dark:bg-background-dark">
+		<div class="max-w-7xl mx-auto px-4 py-4 space-y-3">
+			<!-- Mobile Navigation Links -->
+			<?php
+			if ( has_nav_menu( 'primary' ) ) {
+				wp_nav_menu(
+					array(
+						'theme_location' => 'primary',
+						'container'      => false,
+						'menu_class'     => '',
+						'items_wrap'     => '%3$s',
+						'fallback_cb'    => false,
+						'walker'         => new class extends Walker_Nav_Menu {
+							function start_el( &$output, $item, $depth = 0, $args = null, $id = 0 ) {
+								$classes = empty( $item->classes ) ? array() : (array) $item->classes;
+								$is_current = in_array( 'current-menu-item', $classes ) || in_array( 'current_page_item', $classes );
+								
+								$class_names = $is_current 
+									? 'block px-4 py-3 text-sm font-medium text-primary bg-primary/10 rounded-lg' 
+									: 'block px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary rounded-lg transition-colors';
+								
+								$output .= '<a href="' . esc_url( $item->url ) . '" class="' . esc_attr( $class_names ) . '">';
+								$output .= esc_html( $item->title );
+								$output .= '</a>';
+							}
+						},
+					)
+				);
+			} else {
+				?>
+				<a class="block px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary rounded-lg transition-colors" href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a>
+				<a class="block px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary rounded-lg transition-colors" href="#">About</a>
+				<a class="block px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary rounded-lg transition-colors" href="#">Events</a>
+				<a class="block px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary rounded-lg transition-colors" href="#">Shop</a>
+				<a class="block px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary rounded-lg transition-colors" href="#">Contact</a>
+				<?php
+			}
+			?>
+
+			<!-- Mobile Auth Section -->
+			<div class="border-t border-gray-100 dark:border-gray-800 pt-4 mt-4">
+				<?php if ( is_user_logged_in() ) : 
+					$current_user = wp_get_current_user();
+					?>
+					<!-- Mobile: Logged In User Info -->
+					<div class="px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-lg mb-3">
+						<div class="flex items-center gap-3">
+							<div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
+								<?php 
+								$avatar = get_avatar( $current_user->ID, 40, '', '', array( 'class' => 'w-full h-full object-cover rounded-full' ) );
+								if ( $avatar ) {
+									echo $avatar;
+								} else {
+									echo '<span class="material-icons-outlined">person</span>';
+								}
+								?>
+							</div>
+							<div class="flex-1">
+								<p class="text-sm font-bold text-gray-900 dark:text-white"><?php echo esc_html( $current_user->display_name ); ?></p>
+								<p class="text-xs text-gray-500 dark:text-gray-400 truncate"><?php echo esc_html( $current_user->user_email ); ?></p>
+							</div>
+						</div>
+					</div>
+					<a class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" href="<?php echo esc_url( get_edit_profile_url() ); ?>">
+						<span class="material-icons-outlined text-lg mr-3">dashboard</span>
+						<?php esc_html_e( 'Dashboard', 'desilan' ); ?>
+					</a>
+					<?php if ( function_exists('wc_get_account_endpoint_url') ) : ?>
+						<a class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" href="<?php echo esc_url( wc_get_account_endpoint_url( 'orders' ) ); ?>">
+							<span class="material-icons-outlined text-lg mr-3">shopping_bag</span>
+							<?php esc_html_e( 'Orders', 'desilan' ); ?>
+						</a>
+					<?php endif; ?>
+					<a class="flex items-center px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-colors mt-2" href="<?php echo esc_url( wp_logout_url( home_url() ) ); ?>">
+						<span class="material-icons-outlined text-lg mr-3">logout</span>
+						<?php esc_html_e( 'Logout', 'desilan' ); ?>
+					</a>
+				<?php else : ?>
+					<!-- Mobile: Login/Signup Buttons -->
+					<?php $auth_url = desilan_get_auth_page_url(); ?>
+					<div class="space-y-2">
+						<a href="<?php echo esc_url( $auth_url ); ?>" class="block text-center px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-primary dark:hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+							<?php esc_html_e( 'Login', 'desilan' ); ?>
+						</a>
+						<a href="<?php echo esc_url( add_query_arg( 'action', 'register', $auth_url ) ); ?>" class="block text-center px-4 py-3 text-sm font-bold bg-primary text-white rounded-lg hover:bg-primary-hover transition-all shadow-lg shadow-primary/20">
+							<?php esc_html_e( 'Sign Up', 'desilan' ); ?>
+						</a>
+					</div>
+				<?php endif; ?>
 			</div>
 		</div>
 	</div>
 </nav>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+	// Mobile Menu Toggle
+	const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+	const mobileMenu = document.getElementById('mobile-menu');
+	
+	if (mobileMenuToggle && mobileMenu) {
+		mobileMenuToggle.addEventListener('click', function() {
+			mobileMenu.classList.toggle('hidden');
+			const icon = this.querySelector('.material-icons-outlined');
+			icon.textContent = mobileMenu.classList.contains('hidden') ? 'menu' : 'close';
+		});
+	}
+
+	// Dark Mode Toggle with localStorage persistence
+	const darkModeToggle = document.getElementById('dark-mode-toggle');
+	
+	if (darkModeToggle) {
+		darkModeToggle.addEventListener('click', function() {
+			const html = document.documentElement;
+			const isDark = html.classList.contains('dark');
+			
+			if (isDark) {
+				// Switch to light mode
+				html.classList.remove('dark');
+				localStorage.setItem('theme', 'light');
+			} else {
+				// Switch to dark mode
+				html.classList.add('dark');
+				localStorage.setItem('theme', 'dark');
+			}
+		});
+	}
+});
+</script>
