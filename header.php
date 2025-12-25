@@ -82,31 +82,59 @@
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="flex justify-between items-center h-20">
 			<div class="flex-shrink-0 flex items-center">
-				<a class="font-display text-2xl font-bold text-primary" href="<?php echo esc_url( home_url( '/' ) ); ?>">
-					<?php bloginfo( 'name' ); ?>
-				</a>
+				<?php
+				// Check if custom logo is set
+				if ( has_custom_logo() ) {
+					the_custom_logo();
+				} else {
+					// Fallback to site name
+					?>
+					<a class="font-display text-2xl font-bold text-primary" href="<?php echo esc_url( home_url( '/' ) ); ?>">
+						<?php bloginfo( 'name' ); ?>
+					</a>
+					<?php
+				}
+				?>
 			</div>
+			
+			<!-- Desktop Menu -->
 			<div class="hidden md:flex space-x-8 items-center text-sm font-medium">
 				<?php
-				wp_nav_menu(
-					array(
-						'theme_location' => 'menu-1',
-						'menu_id'        => 'primary-menu',
-						'container'      => false,
-						'menu_class'     => 'flex space-x-8', // Note: WP adds ul, this might need custom walker or just simple links. For now, letting WP verify structure or Just static links as placeholder.
-						'fallback_cb'    => false, // Don't show pages if no menu
-						'items_wrap'     => '%3$s', // Remove ul wrapper if we want direct a tags, but WP outputs li. keeping standard mostly.
-					)
-				);
-				?>
-				<!-- Fallback static links if menu is empty, matching provided HTML -->
-				<?php if ( ! has_nav_menu( 'menu-1' ) ) : ?>
-					<a class="hover:text-primary transition-colors" href="#">Home</a>
-					<a class="hover:text-primary transition-colors" href="#">Audios</a>
+				if ( has_nav_menu( 'primary' ) ) {
+					wp_nav_menu(
+						array(
+							'theme_location' => 'primary',
+							'container'      => false,
+							'menu_class'     => '',
+							'items_wrap'     => '%3$s',
+							'fallback_cb'    => false,
+							'link_before'    => '',
+							'link_after'     => '',
+							'walker'         => new class extends Walker_Nav_Menu {
+								function start_el( &$output, $item, $depth = 0, $args = null, $id = 0 ) {
+									$classes = empty( $item->classes ) ? array() : (array) $item->classes;
+									$is_current = in_array( 'current-menu-item', $classes ) || in_array( 'current_page_item', $classes );
+									
+									$class_names = $is_current ? 'text-primary transition-colors' : 'hover:text-primary transition-colors';
+									
+									$output .= '<a href="' . esc_url( $item->url ) . '" class="' . esc_attr( $class_names ) . '">';
+									$output .= esc_html( $item->title );
+									$output .= '</a>';
+								}
+							},
+						)
+					);
+				} else {
+					// Fallback menu if no menu is set
+					?>
+					<a class="hover:text-primary transition-colors" href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a>
+					<a class="hover:text-primary transition-colors" href="#">About</a>
 					<a class="hover:text-primary transition-colors" href="#">Events</a>
 					<a class="hover:text-primary transition-colors" href="#">Shop</a>
-					<a class="hover:text-primary transition-colors" href="#">Account</a>
-				<?php endif; ?>
+					<a class="hover:text-primary transition-colors" href="#">Contact</a>
+					<?php
+				}
+				?>
 			</div>
 			<div class="flex items-center space-x-4">
 				<button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" onclick="document.documentElement.classList.toggle('dark')">
@@ -130,41 +158,51 @@
 					?>
 					<!-- Logged In: User Dropdown -->
 					<div class="relative group hidden md:block">
-						<button class="flex items-center space-x-2 px-3 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-700 outline-none">
-							<div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center border border-primary/20 overflow-hidden">
-								<?php echo get_avatar( $current_user->ID, 32, '', '', array( 'class' => 'w-full h-full object-cover' ) ); ?>
+						<button class="flex items-center gap-3 pl-4 pr-1.5 py-1.5 rounded-full border border-primary dark:border-primary bg-white dark:bg-card-dark shadow-md transition-all duration-300 focus:outline-none hover:shadow-lg">
+							<span class="text-sm font-medium text-gray-700 dark:text-gray-200"><?php echo esc_html( $current_user->display_name ); ?></span>
+							<div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-sm">
+								<?php 
+								$avatar = get_avatar( $current_user->ID, 32, '', '', array( 'class' => 'w-full h-full object-cover rounded-full' ) );
+								if ( $avatar ) {
+									echo $avatar;
+								} else {
+									// Fallback to initials if no avatar
+									$initials = strtoupper( substr( $current_user->display_name, 0, 1 ) );
+									echo '<span class="material-icons-outlined text-sm">person</span>';
+								}
+								?>
 							</div>
-							<span class="text-sm font-medium"><?php echo esc_html( $current_user->display_name ); ?></span>
-							<span class="material-icons-outlined text-lg text-gray-400 group-hover:text-primary transition-colors">expand_more</span>
 						</button>
-						<div class="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-card-dark rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right scale-95 group-hover:scale-100 z-50">
-							<div class="py-2">
-								<a class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-primary transition-colors" href="<?php echo esc_url( get_edit_profile_url() ); ?>">
-									<span class="material-icons-outlined text-lg mr-3 text-gray-400 group-hover:text-primary">account_circle</span>
-									<?php esc_html_e( 'My Account', 'desilan' ); ?>
-								</a>
-								<?php if ( function_exists('wc_get_account_endpoint_url') ) : ?>
-									<a class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-primary transition-colors" href="<?php echo esc_url( wc_get_account_endpoint_url( 'orders' ) ); ?>">
-										<span class="material-icons-outlined text-lg mr-3 text-gray-400 group-hover:text-primary">subscriptions</span>
-										<?php esc_html_e( 'My Subscriptions', 'desilan' ); ?>
-									</a>
-								<?php endif; ?>
-								<div class="border-t border-gray-100 dark:border-gray-800 my-1"></div>
-								<a class="flex items-center px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors" href="<?php echo esc_url( wp_logout_url( home_url() ) ); ?>">
-									<span class="material-icons-outlined text-lg mr-3">logout</span>
-									<?php esc_html_e( 'Logout', 'desilan' ); ?>
-								</a>
+						<div class="absolute right-0 top-full mt-2 w-60 bg-white dark:bg-card-dark rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right z-50">
+							<div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 mb-1">
+								<p class="text-sm font-bold text-gray-900 dark:text-white font-display">Hello, <?php echo esc_html( $current_user->display_name ); ?></p>
+								<p class="text-xs text-gray-500 dark:text-gray-400 truncate"><?php echo esc_html( $current_user->user_email ); ?></p>
 							</div>
+							<a class="flex items-center px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-accent-light/20 dark:hover:bg-gray-700/50 hover:text-primary transition-colors" href="<?php echo esc_url( get_edit_profile_url() ); ?>">
+								<span class="material-icons-outlined text-lg mr-3">dashboard</span>
+								<?php esc_html_e( 'Dashboard', 'desilan' ); ?>
+							</a>
+							<?php if ( function_exists('wc_get_account_endpoint_url') ) : ?>
+								<a class="flex items-center px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-accent-light/20 dark:hover:bg-gray-700/50 hover:text-primary transition-colors" href="<?php echo esc_url( wc_get_account_endpoint_url( 'orders' ) ); ?>">
+									<span class="material-icons-outlined text-lg mr-3">shopping_bag</span>
+									<?php esc_html_e( 'Orders', 'desilan' ); ?>
+								</a>
+							<?php endif; ?>
+							<div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+							<a class="flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors" href="<?php echo esc_url( wp_logout_url( home_url() ) ); ?>">
+								<span class="material-icons-outlined text-lg mr-3">logout</span>
+								<?php esc_html_e( 'Logout', 'desilan' ); ?>
+							</a>
 						</div>
 					</div>
 				<?php else : ?>
 					<!-- Logged Out: Login/Signup -->
 					<div class="hidden md:flex items-center space-x-3">
 						<?php $auth_url = desilan_get_auth_page_url(); ?>
-						<a href="<?php echo esc_url( $auth_url ); ?>" class="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-primary transition-colors">
+						<a href="<?php echo esc_url( $auth_url ); ?>" class="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-primary transition-all px-4 py-2 rounded-full border-2 border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800">
 							<?php esc_html_e( 'Login', 'desilan' ); ?>
 						</a>
-						<a href="<?php echo esc_url( add_query_arg( 'action', 'register', $auth_url ) ); ?>" class="text-sm font-bold bg-primary text-white px-4 py-2 rounded-full hover:bg-primary-hover transition-colors shadow-lg shadow-primary/20">
+						<a href="<?php echo esc_url( add_query_arg( 'action', 'register', $auth_url ) ); ?>" class="text-sm font-bold bg-primary text-white px-5 py-2 rounded-full hover:bg-primary-hover transition-all shadow-lg shadow-primary/20 border-2 border-primary hover:border-primary-hover">
 							<?php esc_html_e( 'Sign Up', 'desilan' ); ?>
 						</a>
 						<!-- Social Login Hook -->

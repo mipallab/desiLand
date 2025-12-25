@@ -23,7 +23,7 @@ get_header();
 	<div class="absolute top-0 right-0 -mr-20 -mt-20 w-[400px] h-[400px] bg-accent-light/50 dark:bg-primary/10 rounded-full blur-3xl -z-10"></div>
 	<div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-[300px] h-[300px] bg-primary/10 rounded-full blur-3xl -z-10"></div>
 	
-	<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+	<div class="max-w-[750px] mx-auto px-4 sm:px-6 lg:px-8 w-full">
 		<!-- Header -->
 		<div class="text-center mb-10 fade-up">
 			<h1 class="font-display text-3xl md:text-5xl mb-4 text-gray-900 dark:text-white">Welcome to <?php bloginfo( 'name' ); ?></h1>

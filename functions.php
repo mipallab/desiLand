@@ -26,6 +26,46 @@ function desilan_scripts() {
 add_action( 'wp_enqueue_scripts', 'desilan_scripts' );
 
 /**
+ * Theme Setup
+ */
+function desilan_setup() {
+	// Add default posts and comments RSS feed links to head.
+	add_theme_support( 'automatic-feed-links' );
+
+	// Let WordPress manage the document title.
+	add_theme_support( 'title-tag' );
+
+	// Enable support for Post Thumbnails on posts and pages.
+	add_theme_support( 'post-thumbnails' );
+
+	// Add custom logo support
+	add_theme_support( 'custom-logo', array(
+		'height'      => 100,
+		'width'       => 400,
+		'flex-height' => true,
+		'flex-width'  => true,
+		'header-text' => array( 'site-title', 'site-description' ),
+	) );
+
+	// Register navigation menus
+	register_nav_menus( array(
+		'primary' => esc_html__( 'Primary Menu', 'desilan' ),
+	) );
+
+	// Switch default core markup to output valid HTML5.
+	add_theme_support( 'html5', array(
+		'search-form',
+		'comment-form',
+		'comment-list',
+		'gallery',
+		'caption',
+		'style',
+		'script',
+	) );
+}
+add_action( 'after_setup_theme', 'desilan_setup' );
+
+/**
  * Check for Elementor dependency.
  */
 function desilan_check_elementor_dependency() {
