@@ -139,3 +139,136 @@ function desilan_admin_enqueue_scripts() {
 }
 add_action( 'admin_enqueue_scripts', 'desilan_admin_enqueue_scripts' );
 
+/**
+ * Custom Login Handler
+ */
+function desilan_handle_login() {
+	if ( isset( $_POST['desilan_login_nonce'] ) && wp_verify_nonce( $_POST['desilan_login_nonce'], 'desilan_login_action' ) ) {
+		
+		$username = sanitize_text_field( $_POST['login_username'] );
+		$password = $_POST['login_password'];
+		$remember = isset( $_POST['remember_me'] ) ? true : false;
+
+		$credentials = array(
+			'user_login'    => $username,
+			'user_password' => $password,
+			'remember'      => $remember,
+		);
+
+		$user = wp_signon( $credentials, false );
+
+		if ( is_wp_error( $user ) ) {
+			wp_redirect( add_query_arg( 'login', 'failed', wp_get_referer() ) );
+			exit;
+		}
+
+		// Redirect to home or referrer
+		$redirect_to = home_url();
+		if ( isset( $_GET['redirect_to'] ) ) {
+			$redirect_to = esc_url_raw( $_GET['redirect_to'] );
+		}
+		wp_redirect( $redirect_to );
+		exit;
+	}
+}
+add_action( 'template_redirect', 'desilan_handle_login' );
+
+/**
+ * Custom Registration Handler
+ */
+function desilan_handle_registration() {
+	if ( isset( $_POST['desilan_register_nonce'] ) && wp_verify_nonce( $_POST['desilan_register_nonce'], 'desilan_register_action' ) ) {
+		
+		$name     = sanitize_text_field( $_POST['register_name'] );
+		$email    = sanitize_email( $_POST['register_email'] );
+		$password = $_POST['register_password'];
+		$confirm  = $_POST['register_confirm'];
+
+		// Validation
+		if ( $password !== $confirm ) {
+			wp_redirect( add_query_arg( 'register', 'password_mismatch', wp_get_referer() ) );
+			exit;
+		}
+
+		if ( ! is_email( $email ) ) {
+			wp_redirect( add_query_arg( 'register', 'invalid_email', wp_get_referer() ) );
+			exit;
+		}
+
+		if ( email_exists( $email ) ) {
+			wp_redirect( add_query_arg( 'register', 'email_exists', wp_get_referer() ) );
+			exit;
+		}
+
+		// Create username from email
+		$username = sanitize_user( current( explode( '@', $email ) ), true );
+		
+		// Make username unique if it exists
+		if ( username_exists( $username ) ) {
+			$username = $username . wp_rand( 100, 999 );
+		}
+
+		// Create user
+		$user_id = wp_create_user( $username, $password, $email );
+
+		if ( is_wp_error( $user_id ) ) {
+			wp_redirect( add_query_arg( 'register', 'failed', wp_get_referer() ) );
+			exit;
+		}
+
+		// Update display name
+		wp_update_user( array(
+			'ID'           => $user_id,
+			'display_name' => $name,
+			'first_name'   => $name,
+		) );
+
+		// Auto login after registration
+		wp_set_current_user( $user_id );
+		wp_set_auth_cookie( $user_id );
+
+		// Redirect to home
+		wp_redirect( home_url() );
+		exit;
+	}
+}
+add_action( 'template_redirect', 'desilan_handle_registration' );
+
+/**
+ * Redirect wp-login.php to custom auth page
+ */
+function desilan_redirect_login_page() {
+	$page_viewed = basename( $_SERVER['REQUEST_URI'] );
+
+	if ( $page_viewed == 'wp-login.php' && $_SERVER['REQUEST_METHOD'] == 'GET' ) {
+		// Get the auth page URL
+		$auth_page = get_pages( array(
+			'meta_key'   => '_wp_page_template',
+			'meta_value' => 'page-auth.php'
+		) );
+
+		if ( ! empty( $auth_page ) ) {
+			$auth_url = get_permalink( $auth_page[0]->ID );
+			wp_redirect( $auth_url );
+			exit;
+		}
+	}
+}
+add_action( 'init', 'desilan_redirect_login_page' );
+
+/**
+ * Update header login/register URLs to use custom page
+ */
+function desilan_get_auth_page_url() {
+	$auth_page = get_pages( array(
+		'meta_key'   => '_wp_page_template',
+		'meta_value' => 'page-auth.php'
+	) );
+
+	if ( ! empty( $auth_page ) ) {
+		return get_permalink( $auth_page[0]->ID );
+	}
+
+	return wp_login_url();
+}
+
