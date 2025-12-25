@@ -260,15 +260,66 @@ add_action( 'init', 'desilan_redirect_login_page' );
  * Update header login/register URLs to use custom page
  */
 function desilan_get_auth_page_url() {
+	// First check if page exists with our template
 	$auth_page = get_pages( array(
 		'meta_key'   => '_wp_page_template',
-		'meta_value' => 'page-auth.php'
+		'meta_value' => 'page-auth.php',
+		'number'     => 1,
 	) );
 
 	if ( ! empty( $auth_page ) ) {
 		return get_permalink( $auth_page[0]->ID );
 	}
 
+	// Fallback: check for page with slug 'login' or 'auth'
+	$login_page = get_page_by_path( 'login' );
+	if ( $login_page ) {
+		return get_permalink( $login_page->ID );
+	}
+
+	$auth_page_alt = get_page_by_path( 'auth' );
+	if ( $auth_page_alt ) {
+		return get_permalink( $auth_page_alt->ID );
+	}
+
+	// Last resort: return wp-login
 	return wp_login_url();
 }
+
+/**
+ * Auto-create auth page on theme activation
+ */
+function desilan_create_auth_page() {
+	// Check if page already exists
+	$existing_page = get_pages( array(
+		'meta_key'   => '_wp_page_template',
+		'meta_value' => 'page-auth.php',
+		'number'     => 1,
+	) );
+
+	if ( empty( $existing_page ) ) {
+		// Check if a 'login' page exists
+		$login_page = get_page_by_path( 'login' );
+		
+		if ( ! $login_page ) {
+			// Create the page
+			$page_id = wp_insert_post( array(
+				'post_title'   => 'Login',
+				'post_content' => '',
+				'post_status'  => 'publish',
+				'post_type'    => 'page',
+				'post_name'    => 'login',
+			) );
+
+			if ( $page_id && ! is_wp_error( $page_id ) ) {
+				// Assign the template
+				update_post_meta( $page_id, '_wp_page_template', 'page-auth.php' );
+			}
+		} else {
+			// Assign template to existing login page
+			update_post_meta( $login_page->ID, '_wp_page_template', 'page-auth.php' );
+		}
+	}
+}
+add_action( 'after_switch_theme', 'desilan_create_auth_page' );
 
