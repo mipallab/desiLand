@@ -220,7 +220,7 @@
 								<p class="text-sm font-bold text-gray-900 dark:text-white font-display">Hello, <?php echo esc_html( $current_user->display_name ); ?></p>
 								<p class="text-xs text-gray-500 dark:text-gray-400 truncate"><?php echo esc_html( $current_user->user_email ); ?></p>
 							</div>
-							<a class="flex items-center px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-accent-light/20 dark:hover:bg-gray-700/50 hover:text-primary transition-colors" href="<?php echo esc_url( get_edit_profile_url() ); ?>">
+							<a class="flex items-center px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-accent-light/20 dark:hover:bg-gray-700/50 hover:text-primary transition-colors" href="<?php echo esc_url( desilan_get_dashboard_url() ); ?>">
 								<span class="material-icons-outlined text-lg mr-3">dashboard</span>
 								<?php esc_html_e( 'Dashboard', 'desilan' ); ?>
 							</a>
@@ -324,7 +324,7 @@
 							</div>
 						</div>
 					</div>
-					<a class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" href="<?php echo esc_url( get_edit_profile_url() ); ?>">
+					<a class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" href="<?php echo esc_url( desilan_get_dashboard_url() ); ?>">
 						<span class="material-icons-outlined text-lg mr-3">dashboard</span>
 						<?php esc_html_e( 'Dashboard', 'desilan' ); ?>
 					</a>

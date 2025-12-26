@@ -284,7 +284,7 @@ function desilan_redirect_login_page() {
 		// Get the auth page URL
 		$auth_page = get_pages( array(
 			'meta_key'   => '_wp_page_template',
-			'meta_value' => 'page-auth.php'
+			'meta_value' => 'page-templates/page-auth.php'
 		) );
 
 		if ( ! empty( $auth_page ) ) {
@@ -303,7 +303,7 @@ function desilan_get_auth_page_url() {
 	// First check if page exists with our template
 	$auth_page = get_pages( array(
 		'meta_key'   => '_wp_page_template',
-		'meta_value' => 'page-auth.php',
+		'meta_value' => 'page-templates/page-auth.php',
 		'number'     => 1,
 	) );
 
@@ -327,13 +327,40 @@ function desilan_get_auth_page_url() {
 }
 
 /**
+ * Get custom dashboard page URL
+ */
+function desilan_get_dashboard_url() {
+	// Check if page exists with dashboard template
+	$dashboard_page = get_pages( array(
+		'meta_key'   => '_wp_page_template',
+		'meta_value' => 'page-templates/page-dashboard.php',
+		'number'     => 1,
+	) );
+
+	if ( ! empty( $dashboard_page ) ) {
+		return get_permalink( $dashboard_page[0]->ID );
+	}
+
+	// Fallback to WooCommerce My Account page if it exists
+	if ( function_exists( 'wc_get_page_id' ) ) {
+		$myaccount_page_id = wc_get_page_id( 'myaccount' );
+		if ( $myaccount_page_id ) {
+			return get_permalink( $myaccount_page_id );
+		}
+	}
+
+	// Last resort: return edit profile URL
+	return get_edit_profile_url();
+}
+
+/**
  * Auto-create auth page on theme activation
  */
 function desilan_create_auth_page() {
 	// Check if page already exists
 	$existing_page = get_pages( array(
 		'meta_key'   => '_wp_page_template',
-		'meta_value' => 'page-auth.php',
+		'meta_value' => 'page-templates/page-auth.php',
 		'number'     => 1,
 	) );
 
@@ -353,11 +380,11 @@ function desilan_create_auth_page() {
 
 			if ( $page_id && ! is_wp_error( $page_id ) ) {
 				// Assign the template
-				update_post_meta( $page_id, '_wp_page_template', 'page-auth.php' );
+				update_post_meta( $page_id, '_wp_page_template', 'page-templates/page-auth.php' );
 			}
 		} else {
 			// Assign template to existing login page
-			update_post_meta( $login_page->ID, '_wp_page_template', 'page-auth.php' );
+			update_post_meta( $login_page->ID, '_wp_page_template', 'page-templates/page-auth.php' );
 		}
 	}
 }
