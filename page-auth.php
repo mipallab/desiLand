@@ -100,14 +100,17 @@ get_header();
 						</div>
 
 						<div>
-							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5" for="login-password">Password</label>
-							<div class="relative">
-								<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-									<span class="material-icons-outlined text-gray-400">lock</span>
-								</span>
-								<input class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-background-light dark:bg-background-dark focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all dark:text-white placeholder-gray-400" id="login-password" name="login_password" placeholder="••••••••" type="password" required/>
-							</div>
+						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5" for="login-password">Password</label>
+						<div class="relative">
+							<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+								<span class="material-icons-outlined text-gray-400">lock</span>
+							</span>
+							<input class="w-full pl-10 pr-12 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-background-light dark:bg-background-dark focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all dark:text-white placeholder-gray-400" id="login-password" name="login_password" placeholder="••••••••" type="password" required/>
+							<button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" onclick="togglePassword('login-password', this)">
+								<span class="material-icons-outlined text-xl">visibility</span>
+							</button>
 						</div>
+					</div>
 
 						<div class="flex items-center justify-between pt-1">
 							<div class="flex items-center">
@@ -157,7 +160,7 @@ get_header();
 					<form method="post" action="" class="space-y-5" id="desilan-register-form">
 						<?php wp_nonce_field( 'desilan_register_action', 'desilan_register_nonce' ); ?>
 						
-						<div id="register-messages" class="hidden"></div>
+						<div id="register-messages" class="hidden mb-4"></div>
 
 						<div>
 							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5" for="register-name">Full Name</label>
@@ -170,21 +173,38 @@ get_header();
 						</div>
 
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<div>
-								<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5" for="register-password">Password</label>
-								<input class="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-background-dark focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all dark:text-white placeholder-gray-400" id="register-password" name="register_password" placeholder="••••••••" type="password" required/>
-							</div>
-							<div>
-								<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5" for="register-confirm">Confirm</label>
-								<input class="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-background-dark focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all dark:text-white placeholder-gray-400" id="register-confirm" name="register_confirm" placeholder="••••••••" type="password" required/>
+						<div>
+							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5" for="register-password">Password</label>
+							<div class="relative">
+								<input class="w-full px-4 pr-12 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-background-dark focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all dark:text-white placeholder-gray-400" id="register-password" name="register_password" placeholder="••••••••" type="password" required/>
+								<button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" onclick="togglePassword('register-password', this)">
+									<span class="material-icons-outlined text-xl">visibility</span>
+								</button>
 							</div>
 						</div>
+						<div>
+							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5" for="register-confirm">Confirm</label>
+							<div class="relative">
+								<input class="w-full px-4 pr-12 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-background-dark focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all dark:text-white placeholder-gray-400" id="register-confirm" name="register_confirm" placeholder="••••••••" type="password" required/>
+								<button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" onclick="togglePassword('register-confirm', this)">
+									<span class="material-icons-outlined text-xl">visibility</span>
+								</button>
+							</div>
+						</div>
+					</div>
 
 						<div class="flex items-start mt-2">
 							<input class="h-4 w-4 mt-1 text-primary focus:ring-primary border-gray-300 rounded cursor-pointer" id="terms" name="terms" type="checkbox" required/>
 							<label class="ml-2 block text-sm text-gray-600 dark:text-gray-400 cursor-pointer" for="terms">
-								I agree to the <a class="text-primary hover:underline font-medium" href="#">Terms and Conditions</a> and the <a class="text-primary hover:underline font-medium" href="#">Privacy Policy</a>.
-							</label>
+				I agree to the 
+				<?php 
+				$terms_page = get_theme_mod('terms_conditions_page', 0);
+				$privacy_page = get_option('wp_page_for_privacy_policy');
+				?>
+				<a class="text-primary hover:underline font-medium" href="<?php echo $terms_page ? esc_url(get_permalink($terms_page)) : '#'; ?>" target="_blank">Terms and Conditions</a> 
+				and the 
+				<a class="text-primary hover:underline font-medium" href="<?php echo $privacy_page ? esc_url(get_permalink($privacy_page)) : '#'; ?>" target="_blank">Privacy Policy</a>.
+			</label>
 						</div>
 
 						<button class="w-full bg-gray-900 dark:bg-white dark:text-gray-900 text-white px-8 py-3.5 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-all shadow-lg shadow-gray-900/10 dark:shadow-white/10 mt-2" type="submit">
@@ -199,6 +219,22 @@ get_header();
 </main>
 
 <script>
+// Password visibility toggle function
+function togglePassword(inputId, button) {
+	const input = document.getElementById(inputId);
+	const icon = button.querySelector('.material-icons-outlined');
+	
+	if (input.type === 'password') {
+		input.type = 'text';
+		icon.textContent = 'visibility_off';
+	} else {
+		input.type = 'password';
+		icon.textContent = 'visibility';
+	}
+}
+</script>
+
+<script>
 document.addEventListener('DOMContentLoaded', function() {
 	const loginTab = document.getElementById('login-tab');
 	const registerTab = document.getElementById('register-tab');
@@ -211,6 +247,19 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	if (action === 'register') {
 		// Auto-switch to register tab
+		switchToRegister();
+	}
+
+	// Check for error/success messages in URL
+	const loginError = urlParams.get('login');
+	const registerError = urlParams.get('register');
+
+	if (loginError) {
+		showMessage('login-messages', getLoginErrorMessage(loginError), 'error');
+	}
+
+	if (registerError) {
+		showMessage('register-messages', getRegisterErrorMessage(registerError), 'error');
 		switchToRegister();
 	}
 
@@ -236,6 +285,87 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	loginTab.addEventListener('click', switchToLogin);
 	registerTab.addEventListener('click', switchToRegister);
+
+	// Registration form validation
+	const registerForm = document.getElementById('desilan-register-form');
+	if (registerForm) {
+		registerForm.addEventListener('submit', function(e) {
+			const password = document.getElementById('register-password').value;
+			const confirm = document.getElementById('register-confirm').value;
+			const terms = document.getElementById('terms').checked;
+
+			// Clear previous messages
+			hideMessage('register-messages');
+
+			// Validate password match
+			if (password !== confirm) {
+				e.preventDefault();
+				showMessage('register-messages', 'Passwords do not match. Please try again.', 'error');
+				return false;
+			}
+
+			// Validate password length
+			if (password.length < 6) {
+				e.preventDefault();
+				showMessage('register-messages', 'Password must be at least 6 characters long.', 'error');
+				return false;
+			}
+
+			// Validate terms checkbox
+			if (!terms) {
+				e.preventDefault();
+				showMessage('register-messages', 'You must agree to the Terms and Conditions.', 'error');
+				return false;
+			}
+		});
+	}
+
+	// Helper functions for messages
+	function showMessage(elementId, message, type) {
+		const messageDiv = document.getElementById(elementId);
+		if (!messageDiv) return;
+
+		const bgColor = type === 'error' ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' : 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
+		const textColor = type === 'error' ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400';
+		const icon = type === 'error' ? 'error' : 'check_circle';
+
+		messageDiv.innerHTML = `
+			<div class="flex items-start gap-3 p-4 rounded-lg border ${bgColor}">
+				<span class="material-icons-outlined ${textColor}">${icon}</span>
+				<p class="text-sm ${textColor} flex-1">${message}</p>
+			</div>
+		`;
+		messageDiv.classList.remove('hidden');
+		
+		// Scroll to message
+		messageDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+	}
+
+	function hideMessage(elementId) {
+		const messageDiv = document.getElementById(elementId);
+		if (messageDiv) {
+			messageDiv.classList.add('hidden');
+			messageDiv.innerHTML = '';
+		}
+	}
+
+	function getLoginErrorMessage(error) {
+		const messages = {
+			'failed': 'Invalid username or password. Please try again.',
+			'empty': 'Please enter your username and password.',
+		};
+		return messages[error] || 'Login failed. Please try again.';
+	}
+
+	function getRegisterErrorMessage(error) {
+		const messages = {
+			'password_mismatch': 'Passwords do not match. Please try again.',
+			'invalid_email': 'Please enter a valid email address.',
+			'email_exists': 'This email is already registered. Please login or use a different email.',
+			'failed': 'Registration failed. Please try again.',
+		};
+		return messages[error] || 'An error occurred. Please try again.';
+	}
 });
 </script>
 

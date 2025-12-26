@@ -165,6 +165,27 @@ function desilan_customize_register( $wp_customize ) {
 		);
 	}
 
+	/**
+	 * Legal Pages
+	 */
+	// Terms & Conditions Page
+	$wp_customize->add_setting(
+		'terms_conditions_page',
+		array(
+			'default'           => 0,
+			'sanitize_callback' => 'absint',
+		)
+	);
+	$wp_customize->add_control(
+		'terms_conditions_page',
+		array(
+			'label'       => esc_html__( 'Terms & Conditions Page', 'desilan' ),
+			'description' => esc_html__( 'Select the page for Terms & Conditions', 'desilan' ),
+			'section'     => 'desilan_footer_section',
+			'type'        => 'dropdown-pages',
+		)
+	);
+
 }
 add_action( 'customize_register', 'desilan_customize_register' );
 
